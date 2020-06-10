@@ -35,8 +35,6 @@ public class Main extends ListenerAdapter {
         String msg = event.getMessage().getContentRaw();
         String[] command = msg.split(" ");
 
-        //TODO .listen command
-            //TODO add channel to list
         if(command[0].equals(".listen") && author.getPermissions().contains(Permission.ADMINISTRATOR)) {
             addChannel(event.getMessage().getChannel());
         }
@@ -73,21 +71,39 @@ public class Main extends ListenerAdapter {
 
     private static void addChannel(MessageChannel channel) {
         JSONParser jsonParser = new JSONParser();
-        JSONArray channelList;
-
-        JSONObject JSONChannel = new JSONObject();
-        JSONChannel.put("channel", channel);
+        JSONObject jsonChannel = new JSONObject();
+        jsonChannel.put("channel", channel.toString());
 
         try (FileReader fileReader = new FileReader("channels.json")) {
-            Object obj = jsonParser.parse(fileReader);
+            JSONArray channelList = (JSONArray) jsonParser.parse(fileReader);
+            for (Object o : channelList) {
+                JSONObject jsonObj = (JSONObject) o;
+                if (jsonObj.get("channel").equals(jsonChannel.get("channel"))) {
+                    channel.sendMessage("I am already listening to this channel.").queue();
+                    return;
+                }
+            }
+            channelList.add(jsonChannel);
 
-            channelList = (JSONArray) obj;
-
-            //TODO put channel into JSON Array
-        } catch (FileNotFoundException e) {
-            //TODO generate json file
+            FileWriter fileWriter = new FileWriter("channels.json");
+            fileWriter.write(channelList.toJSONString());
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (FileNotFoundException f) {
+            try {
+                FileWriter fileWriter = new FileWriter("channels.json");
+                JSONArray channelList = new JSONArray();
+                channelList.add(jsonChannel);
+                fileWriter.write(channelList.toJSONString());
+                fileWriter.flush();
+                fileWriter.close();
+            } catch (IOException s) {
+                s.printStackTrace();
+            }
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
+
+        channel.sendMessage("I have now added this channel to the listening JSON file.").queue();
     }
 }
