@@ -1,9 +1,12 @@
+import music.PlayerManager;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.managers.AudioManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -13,7 +16,7 @@ import javax.security.auth.login.LoginException;
 import java.io.*;
 import java.util.Properties;
 
-public class Main extends ListenerAdapter {
+public class Assistant extends ListenerAdapter {
     public static void main(String[] args) throws LoginException {
         Properties config = loadProperties();
         String token = config.getProperty("token");
@@ -22,7 +25,7 @@ public class Main extends ListenerAdapter {
             return;
         }
         JDABuilder builder = JDABuilder.createDefault(token);
-        builder.addEventListeners(new Main());
+        builder.addEventListeners(new Assistant());
         builder.build();
     }
 
@@ -32,21 +35,24 @@ public class Main extends ListenerAdapter {
         Member author = event.getMember();
         assert author != null;
         String msg = event.getMessage().getContentRaw();
-        String[] command = msg.split(" ");
+        String[] command = msg.split(" ", 2);
 
-        if(command[0].equals(".listen") && author.getPermissions().contains(Permission.ADMINISTRATOR)) {
-            addChannel(event.getMessage().getChannel());
+        if (command[0].equals(".listen") && author.getPermissions().contains(Permission.ADMINISTRATOR)) {
+            this.addChannel(event.getMessage().getChannel());
             return;
         }
 
-        if(command[0].equals(".unlisten") && author.getPermissions().contains(Permission.ADMINISTRATOR)) {
-            removeChannel(event.getMessage().getChannel());
+        if (command[0].equals(".unlisten") && author.getPermissions().contains(Permission.ADMINISTRATOR)) {
+            this.removeChannel(event.getMessage().getChannel());
             return;
         }
 
-        //TODO check if bot listens to channel
-            //TODO list available commands
-            //TODO play music command
+        boolean isListening = isChannelListening(event.getMessage().getChannel());
+        if (isListening) {
+            if (command[0].equals(".play")) {
+                this.playSong(event, command);
+            }
+        }
     }
 
     private static Properties loadProperties() {
@@ -57,7 +63,6 @@ public class Main extends ListenerAdapter {
             properties.load(fileReader);
         } catch (FileNotFoundException e) {
             properties.setProperty("token", "");
-            properties.setProperty("channels", "");
             try {
                 FileWriter fileWriter = new FileWriter("config.properties");
                 properties.store(fileWriter, "Config for discord bot.");
@@ -73,7 +78,7 @@ public class Main extends ListenerAdapter {
     }
 
     @SuppressWarnings("unchecked")
-    private static void addChannel(MessageChannel channel) {
+    private void addChannel(MessageChannel channel) {
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonChannel = new JSONObject();
         jsonChannel.put("channel", channel.toString());
@@ -112,7 +117,7 @@ public class Main extends ListenerAdapter {
     }
 
     @SuppressWarnings("unchecked")
-    private static void removeChannel(MessageChannel channel){
+    private void removeChannel(MessageChannel channel){
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonChannel = new JSONObject();
         jsonChannel.put("channel", channel.toString());
@@ -142,5 +147,55 @@ public class Main extends ListenerAdapter {
         if (found) {
             channel.sendMessage("I am now ignoring this channel.").queue();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean isChannelListening(MessageChannel channel) {
+        boolean isChannelListening = false;
+        try (FileReader fileReader = new FileReader("channels.json")) {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonChannel = new JSONObject();
+            jsonChannel.put("channel", channel.toString());
+            JSONArray channelList = (JSONArray) jsonParser.parse(fileReader);
+            for (Object o : channelList) {
+                JSONObject jsonObj = (JSONObject) o;
+                if (jsonObj.get("channel").equals(jsonChannel.get("channel"))) {
+                    isChannelListening = true;
+                }
+            }
+
+        } catch (FileNotFoundException ignored) {
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+
+        return isChannelListening;
+    }
+
+    private void playSong(MessageReceivedEvent event, String[] command) {
+        VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
+        if (connectedChannel == null) {
+            event.getChannel().sendMessage("You are not connected to a voice channel.").queue();
+            return;
+        }
+
+        if (command.length < 2) {
+            event.getChannel().sendMessage("You need to put an url after the command.").queue();
+            return;
+        }
+
+        AudioManager audioManager = event.getGuild().getAudioManager();
+        VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
+        if (botChannel != connectedChannel && !event.getMember().getPermissions().contains(Permission.ADMINISTRATOR)) {
+            event.getChannel().sendMessage("I'm in a different voice channel.").queue();
+            return;
+        } else if (botChannel == null) {
+            audioManager.openAudioConnection(connectedChannel);
+        }
+
+        PlayerManager manager = PlayerManager.getInstance();
+        manager.loadAndPlay(event.getTextChannel(), command[1]);
+
+        manager.getGuildMusicManager(event.getGuild()).player.setVolume(100);
     }
 }
