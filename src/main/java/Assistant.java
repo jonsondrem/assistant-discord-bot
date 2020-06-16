@@ -49,8 +49,16 @@ public class Assistant extends ListenerAdapter {
 
         boolean isListening = isChannelListening(event.getMessage().getChannel());
         if (isListening) {
-            if (command[0].equals(".play")) {
-                this.playSong(event, command);
+            switch (command[0]) {
+                case ".play":
+                    this.queueSong(event, command);
+                    break;
+                case ".skip":
+                    this.skipSong(event);
+                    break;
+                case ".stop":
+                    this.stopAudioPlayer(event);
+                    break;
             }
         }
     }
@@ -172,30 +180,96 @@ public class Assistant extends ListenerAdapter {
         return isChannelListening;
     }
 
-    private void playSong(MessageReceivedEvent event, String[] command) {
+    @SuppressWarnings("ConstantConditions")
+    private void queueSong(MessageReceivedEvent event, String[] command) {
         VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
+        String actor = event.getMember().getEffectiveName();
         if (connectedChannel == null) {
-            event.getChannel().sendMessage("You are not connected to a voice channel.").queue();
+            event.getChannel().sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
             return;
         }
 
         if (command.length < 2) {
-            event.getChannel().sendMessage("You need to put an url after the command.").queue();
+            event.getChannel().sendMessage("You need to put an url after the command. `" + actor + "`").queue();
             return;
         }
 
         AudioManager audioManager = event.getGuild().getAudioManager();
         VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
         if (botChannel != connectedChannel && !event.getMember().getPermissions().contains(Permission.ADMINISTRATOR)) {
-            event.getChannel().sendMessage("I'm in a different voice channel.").queue();
+            event.getChannel().sendMessage("I'm in a different voice channel. `" + actor + "`").queue();
             return;
-        } else if (botChannel == null) {
+        } else {
             audioManager.openAudioConnection(connectedChannel);
         }
 
         PlayerManager manager = PlayerManager.getInstance();
-        manager.loadAndPlay(event.getTextChannel(), command[1]);
+        if (command[1].contains("https://")) {
+            manager.loadAndPlay(event.getTextChannel(), command[1], event.getMember());
+        } else {
+            manager.loadAndPlay(event.getTextChannel(), "ytsearch: " + command[1], event.getMember());
+        }
+    }
 
-        manager.getGuildMusicManager(event.getGuild()).player.setVolume(100);
+    @SuppressWarnings("ConstantConditions")
+    private void skipSong(MessageReceivedEvent event) {
+        VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
+        String actor = event.getMember().getEffectiveName();
+        if (connectedChannel == null) {
+            event.getChannel().sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
+            return;
+        }
+
+        VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
+        if (botChannel != connectedChannel && !event.getMember().isOwner()) {
+            event.getChannel().sendMessage("You have to be in the same voice channel as me to the skip song. `"
+                    + actor + "`")
+                    .queue();
+            return;
+        }
+
+        PlayerManager manager = PlayerManager.getInstance();
+        manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder
+                .modifyAttributes(connectedChannel.getMembers().size() - 1, 0.45);
+        if (event.getMember().isOwner()) {
+            manager.getGuildMusicManager(event.getGuild()).scheduler.nextTrack();
+            event.getChannel().sendMessage("Owner of the server skipped the song.").queue();
+            return;
+        }
+        boolean voted = manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.addVoter(event.getMember());
+        if (!voted) {
+            event.getChannel().sendMessage("You have already voted to skip the song. `" +
+                    actor + "`").queue();
+        } else {
+            event.getChannel().sendMessage("`" + actor + "` has voted to skip. (" +
+                    manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.getVotes() + "/" +
+                    manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.getVoteCap() + ")").queue();
+        }
+        boolean pass = manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.runVoteCheck();
+        if (pass) {
+            manager.getGuildMusicManager(event.getGuild()).scheduler.nextTrack();
+            event.getChannel().sendMessage("Enough votes. I am skipping the song.").queue();
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private void stopAudioPlayer(MessageReceivedEvent event) {
+        VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
+        String actor = event.getMember().getEffectiveName();
+        if (connectedChannel == null) {
+            event.getChannel().sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
+            return;
+        }
+
+        VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
+        if (botChannel != connectedChannel && !event.getMember().isOwner()) {
+            event.getChannel().sendMessage("You have to be in the same voice channel as me. `" + actor + "`")
+                    .queue();
+            return;
+        }
+
+        PlayerManager manager = PlayerManager.getInstance();
+        manager.getGuildMusicManager(event.getGuild()).player.startTrack(null, false);
+        event.getChannel().sendMessage("I removed the queue and stopped playing.").queue();
     }
 }
