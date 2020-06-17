@@ -6,3 +6,4 @@ src/main/resources
 src/test
 config.properties
 channels.json
+guildsyntax.json
