@@ -30,7 +30,8 @@ public class Play extends Command {
 
         AudioManager audioManager = event.getGuild().getAudioManager();
         VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
-        if (botChannel != connectedChannel && !event.getMember().getPermissions().contains(Permission.ADMINISTRATOR)) {
+        if (botChannel != connectedChannel && !event.getMember().getPermissions().contains(Permission.ADMINISTRATOR) &&
+                botChannel != null) {
             event.getChannel().sendMessage("I'm in a different voice channel. `" + actor + "`").queue();
             return;
         } else {
