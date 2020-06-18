@@ -13,7 +13,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class Listen extends Command{
+public class Listen extends Command {
+
     public Listen() {
         super("listen");
     }
