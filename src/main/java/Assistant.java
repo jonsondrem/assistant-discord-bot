@@ -1,4 +1,4 @@
-import commands.Command;
+import commands.*;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -10,13 +10,12 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utilities.PropertiesLoader;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
 
 public class Assistant extends ListenerAdapter {
 
@@ -24,15 +23,17 @@ public class Assistant extends ListenerAdapter {
     private static Logger logger = LoggerFactory.getLogger(Assistant.class);
 
     public Assistant() {
-        this.commandList = getCommandsInPackage();
+        this.commandList = insertCommands();
     }
 
     public static void main(String[] args) throws LoginException {
-        Properties config = loadProperties();
-        String token = config.getProperty("token");
+        PropertiesLoader.updateProperties();
+        String token = PropertiesLoader.loadProperties().getProperty("token");
+        String youTubeKey = PropertiesLoader.loadProperties().getProperty("youtube-key");
 
-        if (token.equals("")) {
-            System.out.println("Please write in the token in the config.properties file.");
+        if (token.equals("") || youTubeKey.equals("")) {
+            System.out.println("Discord Bot Token and/or YouTube key are missing. Fill them in the config.properties " +
+                    "file.");
             return;
         }
         JDABuilder builder = JDABuilder.createDefault(token);
@@ -40,32 +41,15 @@ public class Assistant extends ListenerAdapter {
         builder.build();
     }
 
-    public List<Command> getCommandsInPackage() {
-        String packageName = "commands";
-        String path = packageName.replaceAll("\\.", File.separator);
-        List<Command> classes = new ArrayList<>();
-        String[] classPathEntries = System.getProperty("java.class.path").split(
-                System.getProperty("path.separator")
-        );
+    private List<Command> insertCommands() {
+        List<Command> list = new ArrayList<>();
+        list.add(new Listen());
+        list.add(new Play());
+        list.add(new Skip());
+        list.add(new Stop());
+        list.add(new Unlisten());
 
-        String name;
-        for (String classpathEntry : classPathEntries) {
-            try {
-                File base = new File(classpathEntry + File.separatorChar + path);
-                for (File file : Objects.requireNonNull(base.listFiles())) {
-                    name = file.getName();
-                    if (name.endsWith(".class") && !name.equals("Command.class")) {
-                        name = name.substring(0, name.length() - 6);
-                        Class<?> cl = Class.forName(packageName + "." + name);
-                        Command com = (Command) cl.newInstance();
-                        classes.add(com);
-                    }
-                }
-            } catch (Exception ignored) {
-            }
-        }
-
-        return classes;
+        return list;
     }
 
     @Override
@@ -77,35 +61,13 @@ public class Assistant extends ListenerAdapter {
 
         boolean isListening = isChannelListening(event.getMessage().getChannel());
         if (isListening) {
-            for (Command com : commandList) {
+            for (Command com : this.commandList) {
                 if ((syntax + com.getCommand()).equals(command[0])) {
                     com.run(event);
                     return;
                 }
             }
         }
-    }
-
-    private static Properties loadProperties() {
-        Properties properties = new Properties();
-
-        try {
-            FileReader fileReader = new FileReader("config.properties");
-            properties.load(fileReader);
-        } catch (FileNotFoundException e) {
-            properties.setProperty("token", "");
-            try {
-                FileWriter fileWriter = new FileWriter("config.properties");
-                properties.store(fileWriter, "Config for discord bot.");
-            }
-            catch (IOException s) {
-                s.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return properties;
     }
 
     @SuppressWarnings("unchecked")
