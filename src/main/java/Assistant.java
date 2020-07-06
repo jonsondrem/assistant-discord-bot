@@ -1,8 +1,13 @@
 import commands.*;
+import music.PlayerManager;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.managers.AudioManager;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -17,7 +22,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Assistant extends ListenerAdapter {
+public class Assistant implements EventListener {
 
     private List<Command> commandList;
     private static Logger logger = LoggerFactory.getLogger(Assistant.class);
@@ -53,20 +58,14 @@ public class Assistant extends ListenerAdapter {
     }
 
     @Override
-    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+    public void onEvent(@NotNull GenericEvent event) {
+        if (event instanceof MessageReceivedEvent) {
+            this.onMessage((MessageReceivedEvent) event);
+            return;
+        }
 
-        String syntax = this.getGuildSyntax(event);
-        String msg = event.getMessage().getContentRaw();
-        String[] command = msg.split(" ", 2);
-
-        boolean isListening = isChannelListening(event.getMessage().getChannel());
-        if (isListening) {
-            for (Command com : this.commandList) {
-                if ((syntax + com.getCommand()).equals(command[0])) {
-                    com.run(event);
-                    return;
-                }
-            }
+        if (event instanceof GuildVoiceLeaveEvent) {
+            this.onVoiceLeave((GuildVoiceLeaveEvent) event);
         }
     }
 
@@ -134,5 +133,33 @@ public class Assistant extends ListenerAdapter {
         }
 
         return ".";
+    }
+
+    private void onMessage(MessageReceivedEvent event) {
+        String syntax = this.getGuildSyntax(event);
+        String msg = event.getMessage().getContentRaw();
+        String[] command = msg.split(" ", 2);
+
+        boolean isListening = isChannelListening(event.getMessage().getChannel());
+        if (isListening) {
+            for (Command com : this.commandList) {
+                if ((syntax + com.getCommand()).equals(command[0])) {
+                    com.run(event);
+                    return;
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private void onVoiceLeave(GuildVoiceLeaveEvent event) {
+        VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
+        if (botChannel != null && botChannel.getMembers().size() == 1) {
+            PlayerManager manager = PlayerManager.getInstance();
+            manager.getGuildMusicManager(event.getGuild()).player.startTrack(null, false);
+
+            AudioManager audioManager = event.getGuild().getAudioManager();
+            audioManager.closeAudioConnection();
+        }
     }
 }
