@@ -1,7 +1,5 @@
 package commands;
 
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.model.ResourceId;
@@ -61,7 +59,6 @@ public class Play extends Command {
     private String searchYouTube(String search) {
         String url = "";
         try {
-            System.out.println("Launching youtube search");
             YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(),
                     request -> {
                     }).setApplicationName("youtube-search").build();
@@ -75,8 +72,6 @@ public class Play extends Command {
             yTSearch.setFields("items(id)");
             yTSearch.setMaxResults((long) 1);
             yTSearch.setOrder("viewCount");
-
-            System.out.println("config set");
 
             SearchListResponse searchResponse = yTSearch.execute();
             List<SearchResult> list = searchResponse.getItems();
