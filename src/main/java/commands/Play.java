@@ -1,6 +1,7 @@
 package commands;
 
 import api.Spotify;
+import api.YouTubeModel;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.model.ResourceId;
@@ -52,46 +53,19 @@ public class Play extends Command {
         PlayerManager manager = PlayerManager.getInstance();
         if (command[1].contains("spotify:track:")) {
             String songId = command[1].substring(14);
-            manager.loadAndPlay(event.getTextChannel(), searchYouTube(Spotify.getInstance().getSpotifySong(songId)),
+            String trackUrl = YouTubeModel.getInstance().searchYouTube(Spotify.getInstance().getSpotifySong(songId));
+            manager.loadAndPlay(event.getTextChannel(), trackUrl,
                     event.getMember());
         } else if (command[1].contains("https://open.spotify.com/track/")) {
             String songId = command[1].substring(31).split("\\?")[0];
-            manager.loadAndPlay(event.getTextChannel(), searchYouTube(Spotify.getInstance().getSpotifySong(songId)),
+            String trackUrl = YouTubeModel.getInstance().searchYouTube(Spotify.getInstance().getSpotifySong(songId));
+            manager.loadAndPlay(event.getTextChannel(), trackUrl,
                     event.getMember());
         } else if (command[1].contains("https://")) {
             manager.loadAndPlay(event.getTextChannel(), command[1], event.getMember());
         } else {
-            manager.loadAndPlay(event.getTextChannel(), searchYouTube(command[1]), event.getMember());
+            String trackUrl = YouTubeModel.getInstance().searchYouTube(command[1]);
+            manager.loadAndPlay(event.getTextChannel(), trackUrl, event.getMember());
         }
-    }
-
-    private String searchYouTube(String search) {
-        String url = "";
-        try {
-            YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(),
-                    request -> {
-                    }).setApplicationName("youtube-search").build();
-
-            YouTube.Search.List yTSearch = youtube.search().list("id,snippet");
-
-            String apiKey = PropertiesLoader.loadProperties().getProperty("youtube-token");
-            yTSearch.setKey(apiKey);
-            yTSearch.setQ(search);
-            yTSearch.setType("video");
-            yTSearch.setFields("items(id)");
-            yTSearch.setMaxResults((long) 1);
-            yTSearch.setOrder("relevance");
-
-            SearchListResponse searchResponse = yTSearch.execute();
-            List<SearchResult> list = searchResponse.getItems();
-
-            for (SearchResult video : list) {
-                ResourceId rId = video.getId();
-                url = "https://www.youtube.com/watch?v=" + rId.getVideoId();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return url;
     }
 }
