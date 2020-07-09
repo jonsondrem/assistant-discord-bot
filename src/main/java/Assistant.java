@@ -33,15 +33,9 @@ public class Assistant implements EventListener {
 
     public static void main(String[] args) throws LoginException {
         PropertiesLoader.updateProperties();
-        String token = PropertiesLoader.loadProperties().getProperty("token");
-        String youTubeKey = PropertiesLoader.loadProperties().getProperty("youtube-key");
-
-        if (token.equals("") || youTubeKey.equals("")) {
-            System.out.println("Discord Bot Token and/or YouTube key are missing. Fill them in the config.properties " +
-                    "file.");
-            return;
-        }
-        JDABuilder builder = JDABuilder.createDefault(token);
+        boolean validConfig = PropertiesLoader.checkProperties();
+        if (!validConfig) { return; }
+        JDABuilder builder = JDABuilder.createDefault(PropertiesLoader.loadProperties().getProperty("discord-token"));
         builder.addEventListeners(new Assistant());
         builder.build();
     }
