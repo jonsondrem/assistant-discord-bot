@@ -1,5 +1,6 @@
 package commands;
 
+import api.Spotify;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.model.ResourceId;
@@ -49,7 +50,15 @@ public class Play extends Command {
         }
 
         PlayerManager manager = PlayerManager.getInstance();
-        if (command[1].contains("https://")) {
+        if (command[1].contains("spotify:track:")) {
+            String songId = command[1].substring(14);
+            manager.loadAndPlay(event.getTextChannel(), searchYouTube(Spotify.getInstance().getSpotifySong(songId)),
+                    event.getMember());
+        } else if (command[1].contains("https://open.spotify.com/track/")) {
+            String songId = command[1].substring(31).split("\\?")[0];
+            manager.loadAndPlay(event.getTextChannel(), searchYouTube(Spotify.getInstance().getSpotifySong(songId)),
+                    event.getMember());
+        } else if (command[1].contains("https://")) {
             manager.loadAndPlay(event.getTextChannel(), command[1], event.getMember());
         } else {
             manager.loadAndPlay(event.getTextChannel(), searchYouTube(command[1]), event.getMember());
@@ -65,13 +74,13 @@ public class Play extends Command {
 
             YouTube.Search.List yTSearch = youtube.search().list("id,snippet");
 
-            String apiKey = PropertiesLoader.loadProperties().getProperty("youtube-key");
+            String apiKey = PropertiesLoader.loadProperties().getProperty("youtube-token");
             yTSearch.setKey(apiKey);
             yTSearch.setQ(search);
             yTSearch.setType("video");
             yTSearch.setFields("items(id)");
             yTSearch.setMaxResults((long) 1);
-            yTSearch.setOrder("viewCount");
+            yTSearch.setOrder("relevance");
 
             SearchListResponse searchResponse = yTSearch.execute();
             List<SearchResult> list = searchResponse.getItems();
