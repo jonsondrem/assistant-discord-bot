@@ -14,11 +14,11 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public class Spotify {
-    private static Spotify INSTANCE;
+public class SpotifyModel {
+    private static SpotifyModel INSTANCE;
     private static SpotifyApi spotifyApi;
 
-    private Spotify() {
+    private SpotifyModel() {
         spotifyApi = new SpotifyApi.Builder()
                 .setClientId(PropertiesLoader.loadProperties().getProperty("spotify-id"))
                 .setClientSecret(PropertiesLoader.loadProperties().getProperty("spotify-secret"))
@@ -44,16 +44,25 @@ public class Spotify {
             songName = track.getName();
             ArtistSimplified[] artistList = track.getArtists();
             artist = artistList[0].getName();
-        } catch (CompletionException | CancellationException e) {
+        } catch (CompletionException e) {
+            try {
+                ClientCredentialsRequest clientCredentialsRequest = spotifyApi.clientCredentials().build();
+                ClientCredentials clientCredentials = clientCredentialsRequest.execute();
+                spotifyApi.setAccessToken(clientCredentials.getAccessToken());
+                return getSpotifySong(songId);
+            } catch (ParseException | SpotifyWebApiException | IOException err) {
+                e.printStackTrace();
+            }
+        } catch (CancellationException e) {
             e.printStackTrace();
         }
 
         return songName + " " + artist;
     }
 
-    public static synchronized Spotify getInstance() {
+    public static synchronized SpotifyModel getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new Spotify();
+            INSTANCE = new SpotifyModel();
         }
 
         return INSTANCE;
