@@ -16,6 +16,8 @@ public class TrackScheduler extends AudioEventAdapter {
     private final AudioPlayer player;
     private final BlockingQueue<AudioTrack> queue;
     public VoteHolder voteHolder;
+    private boolean onRepeat;
+    private AudioTrack currentTrack;
 
     /**
      * @param player The audio player this scheduler uses
@@ -24,6 +26,7 @@ public class TrackScheduler extends AudioEventAdapter {
         this.player = player;
         this.queue = new LinkedBlockingQueue<>();
         this.voteHolder = new VoteHolder();
+        this.onRepeat = false;
     }
 
     /**
@@ -40,14 +43,33 @@ public class TrackScheduler extends AudioEventAdapter {
         }
     }
 
+    public void nextTrack() {
+        nextTrack(false);
+    }
+
     /**
      * Start the next track, stopping the current one if it is playing.
      */
-    public void nextTrack() {
+    public void nextTrack(boolean skip) {
         // Start the next track, regardless of if something is already playing or not. In case queue was empty, we are
         // giving null to startTrack, which is a valid argument and will simply stop the player.
+        if (this.onRepeat && !skip) {
+            player.startTrack(this.currentTrack.makeClone(), false);
+            this.voteHolder.resetCounter();
+            return;
+        }
+
+        if (skip) {
+            this.onRepeat = false;
+        }
+
         player.startTrack(queue.poll(), false);
         this.voteHolder.resetCounter();
+    }
+
+    @Override
+    public void onTrackStart(AudioPlayer player, AudioTrack track) {
+        this.currentTrack = track;
     }
 
     @Override
@@ -58,7 +80,19 @@ public class TrackScheduler extends AudioEventAdapter {
         }
     }
 
-    public void setVoteHolder(int voteCap, double winPercentage) {
-        this.voteHolder.modifyAttributes(voteCap, winPercentage);
+    public void setRepeat(boolean onRepeat) {
+        this.onRepeat = onRepeat;
+    }
+
+    public BlockingQueue<AudioTrack> getQueue() {
+        return this.queue;
+    }
+
+    public boolean isOnRepeat() {
+        return this.onRepeat;
+    }
+
+    public AudioPlayer getPlayer() {
+        return this.player;
     }
 }
