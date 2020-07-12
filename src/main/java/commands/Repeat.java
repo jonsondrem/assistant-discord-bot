@@ -1,5 +1,6 @@
 package commands;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import music.PlayerManager;
 import music.TrackScheduler;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 public class Repeat extends Command {
     private Map<Long, VoteHolder> voteHolders;
+    private AudioTrack currentTrack;
 
     public Repeat() {
         super("repeat");
@@ -21,13 +23,9 @@ public class Repeat extends Command {
     @Override
     @SuppressWarnings("ConstantConditions")
     public void run(MessageReceivedEvent event) {
-        PlayerManager manager = PlayerManager.getInstance();
-        Long guildId = event.getGuild().getIdLong();
         String actor = event.getMember().getEffectiveName();
         VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
         MessageChannel messageChannel = event.getChannel();
-        TrackScheduler scheduler = manager.getGuildMusicManager(event.getGuild()).scheduler;
-        double winPercentage = 0.45;
 
         if (connectedChannel == null) {
             messageChannel.sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
@@ -42,6 +40,8 @@ public class Repeat extends Command {
             return;
         }
 
+        PlayerManager manager = PlayerManager.getInstance();
+        TrackScheduler scheduler = manager.getGuildMusicManager(event.getGuild()).scheduler;
         if (scheduler.isOnRepeat()) {
             messageChannel.sendMessage("The song is already on repeat. Use skip to go to next.").queue();
             return;
@@ -52,19 +52,26 @@ public class Repeat extends Command {
             return;
         }
 
-        if (event.getMember().isOwner()) {
-            scheduler.setRepeat(true);
-            messageChannel.sendMessage("Owner of the server sat the song on repeat.").queue();
-            return;
-        }
-
+        Long guildId = event.getGuild().getIdLong();
         VoteHolder voteHolder = this.voteHolders.get(event.getGuild().getIdLong());
         if (voteHolder == null) {
             voteHolder = new VoteHolder();
             this.voteHolders.put(guildId, voteHolder);
         }
 
+        double winPercentage = 0.45;
         voteHolder.modifyAttributes(connectedChannel.getMembers().size() - 1, winPercentage);
+
+        if (scheduler.getPlayer().getPlayingTrack() != this.currentTrack) {
+            voteHolder.resetCounter();
+            this.currentTrack = scheduler.getPlayer().getPlayingTrack();
+        }
+
+        if (event.getMember().isOwner()) {
+            scheduler.setRepeat(true);
+            messageChannel.sendMessage("Owner of the server sat the song on repeat.").queue();
+            return;
+        }
 
         boolean voted = voteHolder.addVoter(event.getMember());
         int votes = voteHolder.getVotes();

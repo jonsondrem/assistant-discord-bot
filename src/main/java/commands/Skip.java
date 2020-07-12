@@ -1,13 +1,23 @@
 package commands;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import music.PlayerManager;
+import music.TrackScheduler;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import utilities.VoteHolder;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Skip extends Command {
+    private Map<Long, VoteHolder> voteHolders;
+    private AudioTrack currentTrack;
 
     public Skip() {
         super("skip");
+        this.voteHolders = new HashMap<>();
     }
 
     @Override
@@ -15,44 +25,65 @@ public class Skip extends Command {
     public void run(MessageReceivedEvent event) {
         VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
         String actor = event.getMember().getEffectiveName();
+        MessageChannel messageChannel = event.getChannel();
         if (connectedChannel == null) {
-            event.getChannel().sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
+            messageChannel.sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
             return;
         }
 
         VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
         if (botChannel != connectedChannel && !event.getMember().isOwner()) {
-            event.getChannel().sendMessage("You have to be in the same voice channel as me to the skip song. `"
+            messageChannel.sendMessage("You have to be in the same voice channel as me to the skip song. `"
                     + actor + "`")
                     .queue();
             return;
         }
 
         PlayerManager manager = PlayerManager.getInstance();
-        double winPercentage = 0.45;
-        manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder
-                .modifyAttributes(connectedChannel.getMembers().size() - 1, winPercentage);
+        TrackScheduler scheduler = manager.getGuildMusicManager(event.getGuild()).scheduler;
+
+        if (scheduler.getPlayer().getPlayingTrack() == null) {
+            messageChannel.sendMessage("I'm currently not playing a song.").queue();
+            return;
+        }
+
         if (event.getMember().isOwner()) {
-            manager.getGuildMusicManager(event.getGuild()).scheduler.nextTrack(true);
+            scheduler.nextTrack(true);
             event.getChannel().sendMessage("Owner of the server skipped the song.").queue();
             return;
         }
 
-        boolean voted = manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.addVoter(event.getMember());
-        int votes = manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.getVotes();
-        int voteCap = manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.getVoteCap();
+        Long guildId = event.getGuild().getIdLong();
+        double winPercentage = 0.45;
+        VoteHolder voteHolder = this.voteHolders.get(event.getGuild().getIdLong());
+
+        if (voteHolder == null) {
+            voteHolder = new VoteHolder();
+            this.voteHolders.put(guildId, voteHolder);
+        }
+
+        voteHolder.modifyAttributes(connectedChannel.getMembers().size() - 1, winPercentage);
+
+        if (scheduler.getPlayer().getPlayingTrack() != this.currentTrack) {
+            voteHolder.resetCounter();
+            this.currentTrack = scheduler.getPlayer().getPlayingTrack();
+        }
+
+        boolean voted = voteHolder.addVoter(event.getMember());
+        int votes = voteHolder.getVotes();
+        int voteCap = voteHolder.getVoteCap();
         if (!voted) {
-            event.getChannel().sendMessage("You have already voted to skip the song. `" +
+            messageChannel.sendMessage("You have already voted to skip the song. `" +
                     actor + "`").queue();
         } else {
-            event.getChannel().sendMessage("`" + actor + "` has voted to skip. (" +
+            messageChannel.sendMessage("`" + actor + "` has voted to skip. (" +
                     votes + "/" + this.calculateThreshold(voteCap, winPercentage)+ ")").queue();
         }
 
-        boolean pass = manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.runVoteCheck();
+        boolean pass = voteHolder.runVoteCheck();
         if (pass) {
-            manager.getGuildMusicManager(event.getGuild()).scheduler.nextTrack(true);
-            event.getChannel().sendMessage("Enough votes. I am skipping the song.").queue();
+            scheduler.nextTrack(true);
+            messageChannel.sendMessage("Enough votes. I am skipping the song.").queue();
         }
     }
 
