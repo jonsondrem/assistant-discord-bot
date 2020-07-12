@@ -33,7 +33,7 @@ public class Skip extends Command {
         manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder
                 .modifyAttributes(connectedChannel.getMembers().size() - 1, winPercentage);
         if (event.getMember().isOwner()) {
-            manager.getGuildMusicManager(event.getGuild()).scheduler.nextTrack();
+            manager.getGuildMusicManager(event.getGuild()).scheduler.nextTrack(true);
             event.getChannel().sendMessage("Owner of the server skipped the song.").queue();
             return;
         }
@@ -51,7 +51,7 @@ public class Skip extends Command {
 
         boolean pass = manager.getGuildMusicManager(event.getGuild()).scheduler.voteHolder.runVoteCheck();
         if (pass) {
-            manager.getGuildMusicManager(event.getGuild()).scheduler.nextTrack();
+            manager.getGuildMusicManager(event.getGuild()).scheduler.nextTrack(true);
             event.getChannel().sendMessage("Enough votes. I am skipping the song.").queue();
         }
     }

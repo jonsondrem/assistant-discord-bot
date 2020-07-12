@@ -47,6 +47,7 @@ public class Assistant implements EventListener {
         list.add(new Skip());
         list.add(new Stop());
         list.add(new Unlisten());
+        list.add(new Repeat());
 
         return list;
     }
