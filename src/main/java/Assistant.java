@@ -25,10 +25,12 @@ import java.util.List;
 public class Assistant implements EventListener {
 
     private List<Command> commandList;
+    private Command listenCommand;
     private static Logger logger = LoggerFactory.getLogger(Assistant.class);
 
     public Assistant() {
         this.commandList = insertCommands();
+        this.listenCommand = new Listen();
     }
 
     public static void main(String[] args) throws LoginException {
@@ -42,7 +44,6 @@ public class Assistant implements EventListener {
 
     private List<Command> insertCommands() {
         List<Command> list = new ArrayList<>();
-        list.add(new Listen());
         list.add(new Play());
         list.add(new Skip());
         list.add(new Stop());
@@ -134,6 +135,11 @@ public class Assistant implements EventListener {
         String syntax = this.getGuildSyntax(event);
         String msg = event.getMessage().getContentRaw();
         String[] command = msg.split(" ", 2);
+
+        if ((syntax + this.listenCommand.getCommand()).equals(command[0])) {
+            this.listenCommand.run(event);
+            return;
+        }
 
         boolean isListening = isChannelListening(event.getMessage().getChannel());
         if (isListening) {
