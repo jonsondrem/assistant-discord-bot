@@ -13,22 +13,29 @@ public class Stop extends Command {
     @Override
     @SuppressWarnings("ConstantConditions")
     public void run(MessageReceivedEvent event) {
+        if (!event.getMember().isOwner()) {
+            event.getChannel().sendMessage(":exclamation: **Only the owner of this server can use this command.**")
+                    .queue();
+            return;
+        }
         VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
         String actor = event.getMember().getEffectiveName();
-        if (connectedChannel == null) {
-            event.getChannel().sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
+        /*if (connectedChannel == null) {
+            event.getChannel().sendMessage(":x: **You are not connected to a voice channel!** `" + actor + "`")
+                    .queue();
             return;
         }
 
         VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
         if (botChannel != connectedChannel && !event.getMember().isOwner()) {
-            event.getChannel().sendMessage("You have to be in the same voice channel as me. `" + actor + "`")
-                    .queue();
+            event.getChannel().sendMessage(":x: **You have to be in the same voice channel as me!** `" + actor +
+                    "`").queue();
             return;
-        }
+        }*/
 
         PlayerManager manager = PlayerManager.getInstance();
         manager.getGuildMusicManager(event.getGuild()).player.startTrack(null, false);
-        event.getChannel().sendMessage("I removed the queue and stopped playing.").queue();
+        event.getChannel().sendMessage(":white_check_mark: **Removed the queue and stopped playing songs.** " +
+                ":stop_button:").queue();
     }
 }

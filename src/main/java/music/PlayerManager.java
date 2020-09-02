@@ -48,33 +48,34 @@ public class PlayerManager {
         playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                channel.sendMessage("`" + actorName + "` added to queue: " + track.getInfo().title)
-                        .queue();
+                channel.sendMessage(":white_check_mark: `" + actorName + "` **added to queue: **" +
+                        track.getInfo().title + " :musical_note:").queue();
 
-                TrackInfo.addTrackStarter(track, actorId);
+                TrackInfo.addTrackInfo(track, actorId, channel);
 
                 play(musicManager, track);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                channel.sendMessage("`" + actorName + "` added a playlist: " + playlist.getName())
-                        .queue();
+                channel.sendMessage(":white_check_mark: `" + actorName + "` **added a playlist: **" +
+                        playlist.getName() + " :musical_note:").queue();
 
                 for (AudioTrack track : playlist.getTracks()) {
-                    TrackInfo.addTrackStarter(track, actorId);
+                    TrackInfo.addTrackInfo(track, actorId, channel);
                     play(musicManager, track);
                 }
             }
 
             @Override
             public void noMatches() {
-                channel.sendMessage("Nothing found with " + trackUrl).queue();
+                channel.sendMessage(":x: **Nothing found with: **" + trackUrl)
+                        .queue();
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                channel.sendMessage("Could not play: " + exception.getMessage()).queue();
+                channel.sendMessage(":x: **Could not play song: **" + exception.getMessage()).queue();
             }
         });
     }

@@ -28,27 +28,28 @@ public class Repeat extends Command {
         MessageChannel messageChannel = event.getChannel();
 
         if (connectedChannel == null) {
-            messageChannel.sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
+            messageChannel.sendMessage(":x: **You are not connected to a voice channel!** `" + actor + "`")
+                    .queue();
             return;
         }
 
         VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
         if (botChannel != connectedChannel && !event.getMember().isOwner()) {
-            messageChannel.sendMessage("You have to be in the same voice channel as me to use this command. `"
-                    + actor + "`")
-                    .queue();
+            messageChannel.sendMessage(":exclamation: **You have to be in the same voice channel as me to use " +
+                    "this command!** `" + actor + "`").queue();
             return;
         }
 
         PlayerManager manager = PlayerManager.getInstance();
         TrackScheduler scheduler = manager.getGuildMusicManager(event.getGuild()).scheduler;
         if (scheduler.isOnRepeat()) {
-            messageChannel.sendMessage("The song is already on repeat. Use skip to go to next.").queue();
+            messageChannel.sendMessage(":x: The song is already on repeat. Use '.skip' to go to the " +
+                    "next song. `" + actor + "`").queue();
             return;
         }
 
         if (scheduler.getPlayer().getPlayingTrack() == null) {
-            messageChannel.sendMessage("I'm currently not playing a song.").queue();
+            messageChannel.sendMessage(":x: **I'm not currently playing a song!** `" + actor + "`").queue();
             return;
         }
 
@@ -69,7 +70,8 @@ public class Repeat extends Command {
 
         if (event.getMember().isOwner()) {
             scheduler.setRepeat(true);
-            messageChannel.sendMessage("Owner of the server sat the song on repeat.").queue();
+            messageChannel.sendMessage(":white_check_mark: **Owner of the server sat the current song " +
+                    "on repeat.** :repeat:").queue();
             return;
         }
 
@@ -77,17 +79,19 @@ public class Repeat extends Command {
         int votes = voteHolder.getVotes();
         int voteCap = voteHolder.getVoteCap();
         if (!voted) {
-            messageChannel.sendMessage("You have already voted to turn the song on repeat. `" +
+            messageChannel.sendMessage(":exclamation: **You have already voted to turn the song on repeat!** `" +
                     actor + "`").queue();
         } else {
-            messageChannel.sendMessage("`" + actor + "` has voted to set the song to repeat. (" +
-                    votes + "/" + this.calculateThreshold(voteCap, winPercentage)+ ")").queue();
+            messageChannel.sendMessage(":ballot_box_with_check: `" + actor + "` **has voted to set the current " +
+                    "song on repeat:** (" + votes + "/" + this.calculateThreshold(voteCap, winPercentage)+ ")").queue();
         }
 
         boolean pass = voteHolder.runVoteCheck();
         if (pass) {
             scheduler.setRepeat(true);
-            messageChannel.sendMessage("Enough votes. The song is set to repeat.").queue();
+            messageChannel.sendMessage(":white_check_mark: " +
+                    "**Enough votes. Current song is set on repeat.** :repeat:")
+                    .queue();
         }
     }
 
