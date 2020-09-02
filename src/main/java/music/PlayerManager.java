@@ -42,27 +42,29 @@ public class PlayerManager {
 
     public void loadAndPlay(TextChannel channel, String trackUrl, Member actor) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
+        long actorId = actor.getIdLong();
+        String actorName = actor.getEffectiveName();
 
         playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                channel.sendMessage("`" + actor.getEffectiveName() + "` added to queue " + track.getInfo().title)
+                channel.sendMessage("`" + actorName + "` added to queue: " + track.getInfo().title)
                         .queue();
 
-                TrackInfo.addTrackStarter(track, actor.getIdLong());
+                TrackInfo.addTrackStarter(track, actorId);
 
                 play(musicManager, track);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                AudioTrack firstTrack = playlist.getSelectedTrack();
+                channel.sendMessage("`" + actorName + "` added a playlist: " + playlist.getName())
+                        .queue();
 
-                if (firstTrack == null) {
-                    firstTrack = playlist.getTracks().get(0);
+                for (AudioTrack track : playlist.getTracks()) {
+                    TrackInfo.addTrackStarter(track, actorId);
+                    play(musicManager, track);
                 }
-
-                play(musicManager, firstTrack);
             }
 
             @Override
