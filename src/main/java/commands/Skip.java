@@ -2,6 +2,7 @@ package commands;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import music.PlayerManager;
+import music.TrackInfo;
 import music.TrackScheduler;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -53,7 +54,15 @@ public class Skip extends Command {
             return;
         }
 
-        Long guildId = event.getGuild().getIdLong();
+        if (event.getMember().getIdLong() == TrackInfo.getTrackStarter(scheduler.getPlayer().getPlayingTrack())) {
+            event.getChannel().sendMessage("`" + actor + "` - " + " skipped his/her song, `" +
+                    scheduler.getPlayer().getPlayingTrack().getInfo().title +
+                    "`").queue();
+            scheduler.nextTrack(true);
+            return;
+        }
+
+        long guildId = event.getGuild().getIdLong();
         double winPercentage = 0.45;
         VoteHolder voteHolder = this.voteHolders.get(event.getGuild().getIdLong());
 

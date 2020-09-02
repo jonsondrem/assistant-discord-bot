@@ -49,6 +49,8 @@ public class PlayerManager {
                 channel.sendMessage("`" + actor.getEffectiveName() + "` added to queue " + track.getInfo().title)
                         .queue();
 
+                TrackInfo.addTrackStarter(track, actor.getIdLong());
+
                 play(musicManager, track);
             }
 
