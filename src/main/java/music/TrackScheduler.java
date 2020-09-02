@@ -65,6 +65,8 @@ public class TrackScheduler extends AudioEventAdapter {
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
         this.currentTrack = track;
+        TrackInfo.getTrackInfo(track).getTextChannel().sendMessage(":arrow_forward: **Now Playing: **" +
+                track.getInfo().title + " :notes:").queue();
     }
 
     @Override

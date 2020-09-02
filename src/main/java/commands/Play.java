@@ -21,12 +21,14 @@ public class Play extends Command {
         VoiceChannel connectedChannel = event.getMember().getVoiceState().getChannel();
         String actor = event.getMember().getEffectiveName();
         if (connectedChannel == null) {
-            event.getChannel().sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
+            event.getChannel().sendMessage(":x: **You are not connected to a voice channel!** `" + actor + "`")
+                    .queue();
             return;
         }
 
         if (command.length < 2) {
-            event.getChannel().sendMessage("You need to put an url or search word(s) after the command. `" + actor + "`").queue();
+            event.getChannel().sendMessage(":x: **You need to put an url or search word(s) " +
+                    "after the command!** `" + actor + "`").queue();
             return;
         }
 
@@ -34,7 +36,8 @@ public class Play extends Command {
         VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
         if (botChannel != connectedChannel && !event.getMember().getPermissions().contains(Permission.ADMINISTRATOR) &&
                 botChannel != null) {
-            event.getChannel().sendMessage("I'm in a different voice channel. `" + actor + "`").queue();
+            event.getChannel().sendMessage(":exclamation: **Sorry, but I'm in a different voice channel.** `" +
+                    actor + "`").queue();
             return;
         } else {
             audioManager.openAudioConnection(connectedChannel);

@@ -36,7 +36,7 @@ public class Listen extends Command {
             for (Object o : channelList) {
                 JSONObject jsonObj = (JSONObject) o;
                 if (jsonObj.get("channel").equals(jsonChannel.get("channel"))) {
-                    channel.sendMessage("I am already listening to this channel.").queue();
+                    channel.sendMessage(":x: **Already listening to this channel.**").queue();
                     return;
                 }
             }
@@ -61,6 +61,6 @@ public class Listen extends Command {
             e.printStackTrace();
         }
 
-        channel.sendMessage("I am now listening to this channel.").queue();
+        channel.sendMessage(":white_check_mark: **Now listening to this channel.**").queue();
     }
 }

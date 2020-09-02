@@ -54,7 +54,7 @@ public class Unlisten extends Command {
         }
 
         if (found) {
-            channel.sendMessage("I am now ignoring this channel.").queue();
+            channel.sendMessage(":white_check_mark: **Now ignoring this channel.**").queue();
         }
     }
 }

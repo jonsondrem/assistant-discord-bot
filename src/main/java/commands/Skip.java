@@ -28,15 +28,15 @@ public class Skip extends Command {
         String actor = event.getMember().getEffectiveName();
         MessageChannel messageChannel = event.getChannel();
         if (connectedChannel == null) {
-            messageChannel.sendMessage("You are not connected to a voice channel. `" + actor + "`").queue();
+            messageChannel.sendMessage(":x: **You are not connected to a voice channel!** `" + actor + "`")
+                    .queue();
             return;
         }
 
         VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
         if (botChannel != connectedChannel && !event.getMember().isOwner()) {
-            messageChannel.sendMessage("You have to be in the same voice channel as me to the skip song. `"
-                    + actor + "`")
-                    .queue();
+            messageChannel.sendMessage(":exclamation: **You have to be in the same voice channel as me to the" +
+                    " skip song!** `" + actor + "`").queue();
             return;
         }
 
@@ -44,20 +44,22 @@ public class Skip extends Command {
         TrackScheduler scheduler = manager.getGuildMusicManager(event.getGuild()).scheduler;
 
         if (scheduler.getPlayer().getPlayingTrack() == null) {
-            messageChannel.sendMessage("I'm currently not playing a song.").queue();
+            messageChannel.sendMessage(":x: I'm currently not playing a song! `" + actor + "`").queue();
             return;
         }
 
         if (event.getMember().isOwner()) {
+            event.getChannel().sendMessage(":white_check_mark: **Owner of the server skipped the song.**" +
+                    " :fast_forward:").queue();
             scheduler.nextTrack(true);
-            event.getChannel().sendMessage("Owner of the server skipped the song.").queue();
             return;
         }
 
-        if (event.getMember().getIdLong() == TrackInfo.getTrackStarter(scheduler.getPlayer().getPlayingTrack())) {
-            event.getChannel().sendMessage("`" + actor + "` - " + " skipped his/her song, `" +
-                    scheduler.getPlayer().getPlayingTrack().getInfo().title +
-                    "`").queue();
+        if (event.getMember().getIdLong() == TrackInfo.getTrackInfo(scheduler.getPlayer().getPlayingTrack())
+                .getInitiatorId()) {
+            event.getChannel().sendMessage(":white_check_mark: `" + actor + "`" +
+                    " **skipped his/her song: **" + scheduler.getPlayer().getPlayingTrack().getInfo().title +
+                    " :fast_forward:").queue();
             scheduler.nextTrack(true);
             return;
         }
@@ -82,17 +84,18 @@ public class Skip extends Command {
         int votes = voteHolder.getVotes();
         int voteCap = voteHolder.getVoteCap();
         if (!voted) {
-            messageChannel.sendMessage("You have already voted to skip the song. `" +
+            messageChannel.sendMessage(":exclamation: **You have already voted to skip the song!** `" +
                     actor + "`").queue();
         } else {
-            messageChannel.sendMessage("`" + actor + "` has voted to skip. (" +
-                    votes + "/" + this.calculateThreshold(voteCap, winPercentage)+ ")").queue();
+            messageChannel.sendMessage(":ballot_box_with_check: `" + actor + "` **has voted to skip the current" +
+                    " song.** (" + votes + "/" + this.calculateThreshold(voteCap, winPercentage)+ ")").queue();
         }
 
         boolean pass = voteHolder.runVoteCheck();
         if (pass) {
             scheduler.nextTrack(true);
-            messageChannel.sendMessage("Enough votes. I am skipping the song.").queue();
+            messageChannel.sendMessage(":white_check_mark::fast_forward: " +
+                    "**Enough votes. Skipping current song.**").queue();
         }
     }
 
