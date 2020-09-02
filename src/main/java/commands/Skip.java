@@ -48,17 +48,16 @@ public class Skip extends Command {
             return;
         }
 
-        /*if (event.getMember().isOwner()) {
+        if (event.getMember().isOwner()) {
             scheduler.nextTrack(true);
             event.getChannel().sendMessage("Owner of the server skipped the song.").queue();
             return;
-        }*/
+        }
 
-        long id = ((TrackInfo) scheduler.getPlayer().getPlayingTrack()).getTrackInitiatorId();
-        if (event.getMember().getIdLong() == id) {
-            event.getChannel().sendMessage("`" + actor + "` - " + "Initiator of the song `" +
+        if (event.getMember().getIdLong() == TrackInfo.getTrackStarter(scheduler.getPlayer().getPlayingTrack())) {
+            event.getChannel().sendMessage("`" + actor + "` - " + " skipped his/her song, `" +
                     scheduler.getPlayer().getPlayingTrack().getInfo().title +
-                    "`, skipped this song.").queue();
+                    "`").queue();
             scheduler.nextTrack(true);
             return;
         }
