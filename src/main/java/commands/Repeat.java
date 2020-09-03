@@ -13,11 +13,12 @@ import java.util.Map;
 
 public class Repeat extends Command {
     private Map<Long, VoteHolder> voteHolders;
-    private AudioTrack currentTrack;
+    private Map<Long, AudioTrack> currentTrack;
 
     public Repeat() {
         super("repeat");
         this.voteHolders = new HashMap<>();
+        this.currentTrack = new HashMap<>();
     }
 
     @Override
@@ -63,9 +64,9 @@ public class Repeat extends Command {
         double winPercentage = 0.45;
         voteHolder.modifyAttributes(connectedChannel.getMembers().size() - 1, winPercentage);
 
-        if (scheduler.getPlayer().getPlayingTrack() != this.currentTrack) {
+        if (scheduler.getPlayer().getPlayingTrack() != this.currentTrack.get(guildId)) {
             voteHolder.resetCounter();
-            this.currentTrack = scheduler.getPlayer().getPlayingTrack();
+            this.currentTrack.replace(guildId, scheduler.getPlayer().getPlayingTrack());
         }
 
         if (event.getMember().isOwner()) {
