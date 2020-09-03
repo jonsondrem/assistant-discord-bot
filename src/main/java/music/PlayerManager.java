@@ -80,6 +80,34 @@ public class PlayerManager {
         });
     }
 
+    public void loadAndPlayNoLoadInfo(TextChannel channel, String trackUrl, Member actor) {
+        GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
+        long actorId = actor.getIdLong();
+
+        playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
+            @Override
+            public void trackLoaded(AudioTrack track) {
+                TrackInfo.addTrackInfo(track, actorId, channel);
+
+                play(musicManager, track);
+            }
+
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {}
+
+            @Override
+            public void noMatches() {
+                channel.sendMessage(":x: **Nothing found with: **" + trackUrl)
+                        .queue();
+            }
+
+            @Override
+            public void loadFailed(FriendlyException exception) {
+                channel.sendMessage(":x: **Could not play song: **" + exception.getMessage()).queue();
+            }
+        });
+    }
+
     private void play(GuildMusicManager musicManager, AudioTrack track) {
         musicManager.scheduler.queue(track);
     }
