@@ -1,6 +1,7 @@
 package commands;
 
 import api.SpotifyModel;
+import api.wrapper.PlaylistContent;
 import api.YouTubeModel;
 import music.PlayerManager;
 import net.dv8tion.jda.api.Permission;
@@ -54,6 +55,15 @@ public class Play extends Command {
             String trackUrl = YouTubeModel.getInstance().searchYouTube(SpotifyModel.getInstance().getSpotifySong(songId));
             manager.loadAndPlay(event.getTextChannel(), trackUrl,
                     event.getMember());
+        } else if (command[1].contains("https://open.spotify.com/playlist/")) {
+            String listId = command[1].substring(34).split("\\?")[0];
+            PlaylistContent playlistContent = SpotifyModel.getInstance().getSpotifySongs(listId);
+            event.getChannel().sendMessage(":white_check_mark: `" + actor + "` **added a Spotify playlist: **" +
+                    playlistContent.getName() + " :musical_note:").queue();
+            for (String songName : playlistContent.getTracks()) {
+                String trackUrl = YouTubeModel.getInstance().searchYouTube(songName);
+                manager.loadAndPlayNoLoadInfo(event.getTextChannel(), trackUrl, event.getMember());
+            }
         } else if (command[1].contains("https://")) {
             manager.loadAndPlay(event.getTextChannel(), command[1], event.getMember());
         } else {
