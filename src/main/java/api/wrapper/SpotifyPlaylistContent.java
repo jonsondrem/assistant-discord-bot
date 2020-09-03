@@ -2,11 +2,11 @@ package api.wrapper;
 
 import java.util.List;
 
-public class PlaylistContent {
+public class SpotifyPlaylistContent {
     private String name;
     private List<String> tracks;
 
-    public PlaylistContent(String name, List<String> tracks) {
+    public SpotifyPlaylistContent(String name, List<String> tracks) {
         this.name = name;
         this.tracks = tracks;
     }

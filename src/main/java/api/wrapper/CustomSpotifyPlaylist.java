@@ -4,11 +4,11 @@ import com.google.gson.JsonObject;
 import com.wrapper.spotify.model_objects.AbstractModelObject;
 import com.wrapper.spotify.model_objects.specification.*;
 
-public class CustomPlaylist extends AbstractModelObject {
+public class CustomSpotifyPlaylist extends AbstractModelObject {
     private final String name;
-    private final Paging<CustomPlaylistTrack> tracks;
+    private final Paging<CustomSpotifyPlaylistTrack> tracks;
 
-    private CustomPlaylist(final Builder builder) {
+    private CustomSpotifyPlaylist(final Builder builder) {
         super(builder);
 
         this.name = builder.name;
@@ -19,7 +19,7 @@ public class CustomPlaylist extends AbstractModelObject {
         return name;
     }
 
-    public Paging<CustomPlaylistTrack> getTracks() {
+    public Paging<CustomSpotifyPlaylistTrack> getTracks() {
         return tracks;
     }
 
@@ -30,38 +30,38 @@ public class CustomPlaylist extends AbstractModelObject {
 
     public static final class Builder extends AbstractModelObject.Builder {
         private String name;
-        private Paging<CustomPlaylistTrack> tracks;
+        private Paging<CustomSpotifyPlaylistTrack> tracks;
 
         public Builder setName(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder setTracks(Paging<CustomPlaylistTrack> tracks) {
+        public Builder setTracks(Paging<CustomSpotifyPlaylistTrack> tracks) {
             this.tracks = tracks;
             return this;
         }
 
         @Override
-        public CustomPlaylist build() {
-            return new CustomPlaylist(this);
+        public CustomSpotifyPlaylist build() {
+            return new CustomSpotifyPlaylist(this);
         }
     }
 
-    public static final class JsonUtil extends AbstractModelObject.JsonUtil<CustomPlaylist> {
-        public CustomPlaylist createModelObject(JsonObject jsonObject) {
+    public static final class JsonUtil extends AbstractModelObject.JsonUtil<CustomSpotifyPlaylist> {
+        public CustomSpotifyPlaylist createModelObject(JsonObject jsonObject) {
             if (jsonObject == null || jsonObject.isJsonNull()) {
                 return null;
             }
 
-            return new CustomPlaylist.Builder()
+            return new CustomSpotifyPlaylist.Builder()
                     .setName(
                             hasAndNotNull(jsonObject, "name")
                                     ? jsonObject.get("name").getAsString()
                                     : null)
                     .setTracks(
                             hasAndNotNull(jsonObject, "tracks")
-                                    ? new CustomPlaylistTrack.JsonUtil().createModelObjectPaging(
+                                    ? new CustomSpotifyPlaylistTrack.JsonUtil().createModelObjectPaging(
                                     jsonObject.getAsJsonObject("tracks"))
                                     : null)
                     .build();

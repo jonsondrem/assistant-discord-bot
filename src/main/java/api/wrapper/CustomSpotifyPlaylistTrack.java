@@ -5,11 +5,11 @@ import com.google.gson.JsonObject;
 import com.wrapper.spotify.model_objects.AbstractModelObject;
 import com.wrapper.spotify.model_objects.specification.Track;
 
-@JsonDeserialize(builder = CustomPlaylistTrack.Builder.class)
-public class CustomPlaylistTrack extends AbstractModelObject {
+@JsonDeserialize(builder = CustomSpotifyPlaylistTrack.Builder.class)
+public class CustomSpotifyPlaylistTrack extends AbstractModelObject {
     private final Track track;
 
-    private CustomPlaylistTrack(final Builder builder) {
+    private CustomSpotifyPlaylistTrack(final Builder builder) {
         super(builder);
 
         this.track = builder.track;
@@ -33,13 +33,13 @@ public class CustomPlaylistTrack extends AbstractModelObject {
         }
 
         @Override
-        public CustomPlaylistTrack build() {
-            return new CustomPlaylistTrack(this);
+        public CustomSpotifyPlaylistTrack build() {
+            return new CustomSpotifyPlaylistTrack(this);
         }
     }
 
-    public static final class JsonUtil extends AbstractModelObject.JsonUtil<CustomPlaylistTrack> {
-        public CustomPlaylistTrack createModelObject(JsonObject jsonObject) {
+    public static final class JsonUtil extends AbstractModelObject.JsonUtil<CustomSpotifyPlaylistTrack> {
+        public CustomSpotifyPlaylistTrack createModelObject(JsonObject jsonObject) {
             if (jsonObject == null || jsonObject.isJsonNull()) {
                 return null;
             }
