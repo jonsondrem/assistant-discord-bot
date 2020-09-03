@@ -14,11 +14,12 @@ import java.util.Map;
 
 public class Skip extends Command {
     private Map<Long, VoteHolder> voteHolders;
-    private AudioTrack currentTrack;
+    private Map<Long, AudioTrack> currentTrack;
 
     public Skip() {
         super("skip");
         this.voteHolders = new HashMap<>();
+        this.currentTrack = new HashMap<>();
     }
 
     @Override
@@ -66,7 +67,7 @@ public class Skip extends Command {
 
         long guildId = event.getGuild().getIdLong();
         double winPercentage = 0.45;
-        VoteHolder voteHolder = this.voteHolders.get(event.getGuild().getIdLong());
+        VoteHolder voteHolder = this.voteHolders.get(guildId);
 
         if (voteHolder == null) {
             voteHolder = new VoteHolder();
@@ -75,9 +76,9 @@ public class Skip extends Command {
 
         voteHolder.modifyAttributes(connectedChannel.getMembers().size() - 1, winPercentage);
 
-        if (scheduler.getPlayer().getPlayingTrack() != this.currentTrack) {
+        if (scheduler.getPlayer().getPlayingTrack() != this.currentTrack.get(guildId)) {
             voteHolder.resetCounter();
-            this.currentTrack = scheduler.getPlayer().getPlayingTrack();
+            this.currentTrack.replace(guildId, scheduler.getPlayer().getPlayingTrack());
         }
 
         boolean voted = voteHolder.addVoter(event.getMember());
