@@ -44,7 +44,7 @@ public class Repeat extends Command {
         PlayerManager manager = PlayerManager.getInstance();
         TrackScheduler scheduler = manager.getGuildMusicManager(event.getGuild()).scheduler;
         if (scheduler.isOnRepeat()) {
-            messageChannel.sendMessage(":x: The song is already on repeat. Use '.skip' to go to the " +
+            messageChannel.sendMessage(":x: The song is already on repeat. Use 'skip' to go to the " +
                     "next song. `" + actor + "`").queue();
             return;
         }
@@ -55,7 +55,7 @@ public class Repeat extends Command {
         }
 
         Long guildId = event.getGuild().getIdLong();
-        VoteHolder voteHolder = this.voteHolders.get(event.getGuild().getIdLong());
+        VoteHolder voteHolder = this.voteHolders.get(guildId);
         if (voteHolder == null) {
             voteHolder = new VoteHolder();
             this.voteHolders.put(guildId, voteHolder);
