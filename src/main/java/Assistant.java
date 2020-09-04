@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -58,14 +59,22 @@ public class Assistant implements EventListener {
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onEvent(@NotNull GenericEvent event) {
         if (event instanceof MessageReceivedEvent) {
             this.onMessage((MessageReceivedEvent) event);
-            return;
         }
 
-        if (event instanceof GuildVoiceLeaveEvent) {
-            this.onVoiceLeave((GuildVoiceLeaveEvent) event);
+        else if (event instanceof GuildVoiceLeaveEvent) {
+            VoiceChannel channel = ((GuildVoiceLeaveEvent) event).getGuild().getSelfMember().getVoiceState()
+                    .getChannel();
+            this.disconnectBotIfEmpty(channel);
+        }
+
+        else if (event instanceof GuildVoiceMoveEvent) {
+            VoiceChannel channel = ((GuildVoiceMoveEvent) event).getGuild().getSelfMember().getVoiceState()
+                    .getChannel();
+            this.disconnectBotIfEmpty(channel);
         }
     }
 
@@ -156,14 +165,12 @@ public class Assistant implements EventListener {
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
-    private void onVoiceLeave(GuildVoiceLeaveEvent event) {
-        VoiceChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
-        if (botChannel != null && botChannel.getMembers().size() == 1) {
+    private void disconnectBotIfEmpty(VoiceChannel channel) {
+        if (channel != null && channel.getMembers().size() == 1) {
             PlayerManager manager = PlayerManager.getInstance();
-            manager.getGuildMusicManager(event.getGuild()).player.startTrack(null, false);
+            manager.getGuildMusicManager(channel.getGuild()).player.startTrack(null, false);
 
-            AudioManager audioManager = event.getGuild().getAudioManager();
+            AudioManager audioManager = channel.getGuild().getAudioManager();
             audioManager.closeAudioConnection();
         }
     }
