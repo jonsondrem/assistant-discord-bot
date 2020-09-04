@@ -71,11 +71,9 @@ public class SpotifyModel {
 
         try {
             CustomSpotifyPlaylist customSpotifyPlaylist = getPlaylist(playlistId);
-            System.out.println("Listname: " + customSpotifyPlaylist.getName());
             listName = customSpotifyPlaylist.getName();
 
             for (CustomSpotifyPlaylistTrack cTrack : customSpotifyPlaylist.getTracks().getItems()) {
-                System.out.println(cTrack.getTrack().getName());
                 ArtistSimplified[] artistList = cTrack.getTrack().getArtists();
                 songList.add(cTrack.getTrack().getName() + " " + artistList[0].getName());
             }

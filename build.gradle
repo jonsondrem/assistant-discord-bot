@@ -20,4 +20,5 @@ dependencies {
     compile 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
     compile 'com.google.apis:google-api-services-youtube:v3-rev222-1.25.0'
     compile 'se.michaelthelin.spotify:spotify-web-api-java:6.1.0'
+    compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
 }

@@ -1,13 +1,15 @@
 package commands;
 
 import api.SpotifyModel;
+import api.YouTubeScraper;
 import api.wrapper.SpotifyPlaylistContent;
-import api.YouTubeModel;
 import music.PlayerManager;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
+
+import java.util.List;
 
 public class Play extends Command {
 
@@ -44,40 +46,28 @@ public class Play extends Command {
             audioManager.openAudioConnection(connectedChannel);
         }
 
-        PlayerManager manager = PlayerManager.getInstance();
-        if (command[1].contains("spotify:track:")) {
+        if (command[1].contains("spotify:track:") || command[1].contains("https://open.spotify.com/track/")) {
+            String
             String songId = command[1].substring(14);
-            String trackUrl = YouTubeModel.getInstance().searchYouTube(SpotifyModel.getInstance().getSpotifySong(songId));
-            manager.loadAndPlay(event.getTextChannel(), trackUrl,
-                    event.getMember());
-        } else if (command[1].contains("https://open.spotify.com/track/")) {
-            String songId = command[1].substring(31).split("\\?")[0];
-            String trackUrl = YouTubeModel.getInstance().searchYouTube(SpotifyModel.getInstance().getSpotifySong(songId));
-            manager.loadAndPlay(event.getTextChannel(), trackUrl,
-                    event.getMember());
-        } else if (command[1].contains("spotify:playlist:")) {
-            String listId = command[1].substring(17);
+            YouTubeScraper.searchYouTubeAndPlay(SpotifyModel.getInstance().getSpotifySong(songId),
+                    event.getTextChannel(), event.getMember());
+        } else if (command[1].contains("spotify:playlist:") || command[1].contains("https://open.spotify.com/playlist/")) {
+            String listId = "";
+            if (command[1].contains("spotify:playlist:")) {
+                listId = command[1].substring(17);
+            } else {
+                listId = command[1].substring(34).split("\\?")[0];
+            }
             SpotifyPlaylistContent spotifyPlaylistContent = SpotifyModel.getInstance().getSpotifySongs(listId);
             event.getChannel().sendMessage(":white_check_mark: `" + actor + "` **added a Spotify playlist: **" +
                     spotifyPlaylistContent.getName() + " :musical_note:").queue();
-            for (String songName : spotifyPlaylistContent.getTracks()) {
-                String trackUrl = YouTubeModel.getInstance().searchYouTube(songName);
-                manager.loadAndPlayNoLoadInfo(event.getTextChannel(), trackUrl, event.getMember());
-            }
-        } else if (command[1].contains("https://open.spotify.com/playlist/")) {
-            String listId = command[1].substring(34).split("\\?")[0];
-            SpotifyPlaylistContent spotifyPlaylistContent = SpotifyModel.getInstance().getSpotifySongs(listId);
-            event.getChannel().sendMessage(":white_check_mark: `" + actor + "` **added a Spotify playlist: **" +
-                    spotifyPlaylistContent.getName() + " :musical_note:").queue();
-            for (String songName : spotifyPlaylistContent.getTracks()) {
-                String trackUrl = YouTubeModel.getInstance().searchYouTube(songName);
-                manager.loadAndPlayNoLoadInfo(event.getTextChannel(), trackUrl, event.getMember());
-            }
+            YouTubeScraper.searchYouTubeAndPlay(spotifyPlaylistContent.getTracks(), event.getTextChannel(),
+                    event.getMember());
         } else if (command[1].contains("https://")) {
+            PlayerManager manager = PlayerManager.getInstance();
             manager.loadAndPlay(event.getTextChannel(), command[1], event.getMember());
         } else {
-            String trackUrl = YouTubeModel.getInstance().searchYouTube(command[1]);
-            manager.loadAndPlay(event.getTextChannel(), trackUrl, event.getMember());
+            YouTubeScraper.searchYouTubeAndPlay(command[1], event.getTextChannel(), event.getMember());
         }
     }
 }
