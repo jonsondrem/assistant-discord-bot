@@ -1,3 +1,5 @@
+import api.SpotifyModel;
+import api.YouTubeScraper;
 import commands.*;
 import music.PlayerManager;
 import net.dv8tion.jda.api.JDABuilder;
@@ -37,6 +39,8 @@ public class Assistant implements EventListener {
         PropertiesLoader.updateProperties();
         boolean validConfig = PropertiesLoader.checkProperties();
         if (!validConfig) { return; }
+        YouTubeScraper.build();
+        SpotifyModel.build();
         JDABuilder builder = JDABuilder.createDefault(PropertiesLoader.loadProperties().getProperty("discord-token"));
         builder.addEventListeners(new Assistant());
         builder.build();

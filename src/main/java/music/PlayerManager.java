@@ -75,7 +75,8 @@ public class PlayerManager {
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                channel.sendMessage(":x: **Could not play song: **" + exception.getMessage()).queue();
+                channel.sendMessage(":x: **Could not play song** " + trackUrl + "**: **" + exception.getMessage())
+                        .queue();
             }
         });
     }
@@ -103,7 +104,8 @@ public class PlayerManager {
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                channel.sendMessage(":x: **Could not play song: **" + exception.getMessage()).queue();
+                channel.sendMessage(":x: **Could not play song** " + trackUrl + "**:** " + exception.getMessage())
+                        .queue();
             }
         });
     }

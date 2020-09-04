@@ -45,7 +45,8 @@ public class YouTubeModel {
                 ResourceId rId = video.getId();
                 url = "https://www.youtube.com/watch?v=" + rId.getVideoId();
             }
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return url;

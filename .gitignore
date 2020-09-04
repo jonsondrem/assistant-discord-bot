@@ -7,3 +7,4 @@ src/test
 config.properties
 channels.json
 guildsyntax.json
+src/main/java/api/chromedriver.exe
