@@ -104,4 +104,8 @@ public class TrackScheduler extends AudioEventAdapter {
     public AudioPlayer getPlayer() {
         return this.player;
     }
+
+    public void clearQueue() {
+        queue.clear();
+    }
 }
