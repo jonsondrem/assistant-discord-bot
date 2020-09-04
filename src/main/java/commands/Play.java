@@ -13,6 +13,7 @@ public class Play extends Command {
 
     public Play() {
         super("play");
+        this.description = "Plays a song or a playlist. Enter an url or search with words.";
     }
 
     @Override

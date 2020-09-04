@@ -20,6 +20,7 @@ public class Skip extends Command {
         super("skip");
         this.voteHolders = new HashMap<>();
         this.currentTrack = new HashMap<>();
+        this.description = "Skips the current playing song.";
     }
 
     @Override
