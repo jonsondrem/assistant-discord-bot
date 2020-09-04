@@ -17,6 +17,7 @@ public class Listen extends Command {
 
     public Listen() {
         super("listen");
+        this.description = "Makes the bot listen to a channel for commands. Admin-Only.";
     }
 
     @Override

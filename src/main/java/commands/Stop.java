@@ -8,6 +8,7 @@ public class Stop extends Command {
 
     public Stop() {
         super("stop");
+        this.description = "Stops the current song and clears the queue.";
     }
 
     @Override

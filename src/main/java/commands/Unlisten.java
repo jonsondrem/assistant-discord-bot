@@ -17,6 +17,7 @@ public class Unlisten extends Command {
 
     public Unlisten() {
         super("unlisten");
+        this.description = "Stops listening to a channel for commands. Admin-only";
     }
 
     @Override

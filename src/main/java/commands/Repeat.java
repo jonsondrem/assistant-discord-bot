@@ -19,6 +19,7 @@ public class Repeat extends Command {
         super("repeat");
         this.voteHolders = new HashMap<>();
         this.currentTrack = new HashMap<>();
+        this.description = "Repeats the current playing song.";
     }
 
     @Override
