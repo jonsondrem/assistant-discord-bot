@@ -35,6 +35,7 @@ public class Stop extends Command {
 
         PlayerManager manager = PlayerManager.getInstance();
         manager.getGuildMusicManager(event.getGuild()).player.startTrack(null, false);
+        manager.getGuildMusicManager(event.getGuild()).scheduler.clearQueue();
         event.getChannel().sendMessage(":white_check_mark: **Removed the queue and stopped playing songs.** " +
                 ":stop_button:").queue();
     }
