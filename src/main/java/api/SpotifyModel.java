@@ -104,6 +104,12 @@ public class SpotifyModel {
         return new CustomSpotifyPlaylist.JsonUtil().createModelObject(request.getJson());
     }
 
+    public static synchronized void build() {
+        if (INSTANCE == null) {
+            INSTANCE = new SpotifyModel();
+        }
+    }
+
     public static synchronized SpotifyModel getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new SpotifyModel();

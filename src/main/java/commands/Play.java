@@ -9,8 +9,6 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 
-import java.util.List;
-
 public class Play extends Command {
 
     public Play() {
@@ -47,12 +45,16 @@ public class Play extends Command {
         }
 
         if (command[1].contains("spotify:track:") || command[1].contains("https://open.spotify.com/track/")) {
-            String
-            String songId = command[1].substring(14);
-            YouTubeScraper.searchYouTubeAndPlay(SpotifyModel.getInstance().getSpotifySong(songId),
+            String songId;
+            if (command[1].contains("spotify:track:")) {
+                songId = command[1].substring(14);
+            } else {
+                songId = command[1].substring(31).split("\\?")[0];
+            }
+            YouTubeScraper.getInstance().searchYouTubeAndPlay(SpotifyModel.getInstance().getSpotifySong(songId),
                     event.getTextChannel(), event.getMember());
         } else if (command[1].contains("spotify:playlist:") || command[1].contains("https://open.spotify.com/playlist/")) {
-            String listId = "";
+            String listId;
             if (command[1].contains("spotify:playlist:")) {
                 listId = command[1].substring(17);
             } else {
@@ -61,13 +63,13 @@ public class Play extends Command {
             SpotifyPlaylistContent spotifyPlaylistContent = SpotifyModel.getInstance().getSpotifySongs(listId);
             event.getChannel().sendMessage(":white_check_mark: `" + actor + "` **added a Spotify playlist: **" +
                     spotifyPlaylistContent.getName() + " :musical_note:").queue();
-            YouTubeScraper.searchYouTubeAndPlay(spotifyPlaylistContent.getTracks(), event.getTextChannel(),
+            YouTubeScraper.getInstance().searchYouTubeAndPlay(spotifyPlaylistContent.getTracks(), event.getTextChannel(),
                     event.getMember());
         } else if (command[1].contains("https://")) {
             PlayerManager manager = PlayerManager.getInstance();
             manager.loadAndPlay(event.getTextChannel(), command[1], event.getMember());
         } else {
-            YouTubeScraper.searchYouTubeAndPlay(command[1], event.getTextChannel(), event.getMember());
+            YouTubeScraper.getInstance().searchYouTubeAndPlay(command[1], event.getTextChannel(), event.getMember());
         }
     }
 }
