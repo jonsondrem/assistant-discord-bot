@@ -4,7 +4,9 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.concurrent.*;
@@ -66,19 +68,24 @@ public class TrackScheduler extends AudioEventAdapter {
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
         this.currentTrack = track;
-        TrackInfo.getTrackInfo(track).getTextChannel().sendMessage(":arrow_forward: **Now Playing: **" +
-                track.getInfo().title + " :notes:").queue();
+        TextChannel channel = TrackInfo.getTrackInfo(track).getTextChannel();
+        channel.sendMessage(":arrow_forward: **Now Playing: **" + track.getInfo().title + " :notes:").queue();
+        Activity activity = Activity.playing(track.getInfo().title);
+        channel.getJDA().getPresence().setActivity(activity);
     }
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+        TextChannel channel = TrackInfo.getTrackInfo(track).getTextChannel();
+        channel.getJDA().getPresence().setActivity(null);
+
         //When nothing is playing, schedule a disconnect from voice-channel
         if (queue.isEmpty()) {
             Executors.newSingleThreadScheduledExecutor().schedule(() -> {
                 //Only disconnect if nothing has been played during the time.
                 if (player.getPlayingTrack() == null && track == currentTrack) {
                     PlayerManager manager = PlayerManager.getInstance();
-                    Guild guild = TrackInfo.getTrackInfo(track).getTextChannel().getGuild();
+                    Guild guild = channel.getGuild();
                     manager.getGuildMusicManager(guild).player.startTrack(null, false);
 
                     AudioManager audioManager = guild.getAudioManager();
