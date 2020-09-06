@@ -60,7 +60,7 @@ public class Skip extends Command {
         if (event.getMember().getIdLong() == TrackInfo.getTrackInfo(scheduler.getPlayer().getPlayingTrack())
                 .getInitiatorId()) {
             event.getChannel().sendMessage(":white_check_mark: `" + actor + "`" +
-                    " **skipped his/her song: **" + scheduler.getPlayer().getPlayingTrack().getInfo().title +
+                    " **skipped their song: **" + scheduler.getPlayer().getPlayingTrack().getInfo().title +
                     " :fast_forward:").queue();
             scheduler.nextTrack(true);
             return;
@@ -79,7 +79,8 @@ public class Skip extends Command {
 
         if (scheduler.getPlayer().getPlayingTrack() != this.currentTrack.get(guildId)) {
             voteHolder.resetCounter();
-            this.currentTrack.replace(guildId, scheduler.getPlayer().getPlayingTrack());
+            System.out.println("Test");
+            this.currentTrack.put(guildId, scheduler.getPlayer().getPlayingTrack());
         }
 
         boolean voted = voteHolder.addVoter(event.getMember());
