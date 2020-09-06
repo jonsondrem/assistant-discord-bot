@@ -67,7 +67,7 @@ public class Repeat extends Command {
 
         if (scheduler.getPlayer().getPlayingTrack() != this.currentTrack.get(guildId)) {
             voteHolder.resetCounter();
-            this.currentTrack.replace(guildId, scheduler.getPlayer().getPlayingTrack());
+            this.currentTrack.put(guildId, scheduler.getPlayer().getPlayingTrack());
         }
 
         if (event.getMember().isOwner()) {
