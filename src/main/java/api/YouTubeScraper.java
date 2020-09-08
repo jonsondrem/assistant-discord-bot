@@ -53,6 +53,10 @@ public class YouTubeScraper {
         }
     }
 
+    public void turnOffWebDriver() {
+        webDriver.quit();
+    }
+
     public static synchronized void build() {
         if (INSTANCE == null) {
             INSTANCE = new YouTubeScraper();
