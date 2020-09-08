@@ -45,6 +45,9 @@ public class PropertiesLoader {
             if (properties.getProperty("spotify-secret") == null) {
                 properties.setProperty("spotify-secret", "");
             }
+            if (properties.getProperty("discord-id") == null) {
+                properties.setProperty("discord-id", "");
+            }
             try {
                 FileWriter fileWriter = new FileWriter("config.properties");
                 properties.store(fileWriter, "Config for discord bot.");
@@ -57,6 +60,7 @@ public class PropertiesLoader {
             properties.setProperty("youtube-token", "");
             properties.setProperty("spotify-id", "");
             properties.setProperty("spotify-secret", "");
+            properties.setProperty("discord-id", "");
             try {
                 FileWriter fileWriter = new FileWriter("config.properties");
                 properties.store(fileWriter, "Config for discord bot.");
@@ -74,6 +78,7 @@ public class PropertiesLoader {
         String youTubeKey = PropertiesLoader.loadProperties().getProperty("youtube-token");
         String spotifyId = PropertiesLoader.loadProperties().getProperty("spotify-id");
         String spotifySecret = PropertiesLoader.loadProperties().getProperty("spotify-secret");
+        String id = PropertiesLoader.loadProperties().getProperty("discord-id");
 
         boolean validConfig = true;
         if (token.equals("")) {
@@ -90,6 +95,15 @@ public class PropertiesLoader {
         }
         if (spotifySecret.equals("")) {
             logger.info("Spotify Client secret is missing.");
+            validConfig = false;
+        }
+        if (id.equals("")) {
+            logger.info("Discord ID is missing.");
+        }
+        try {
+            Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            logger.info("Discord ID has a invalid format.");
             validConfig = false;
         }
         if (!validConfig) {
