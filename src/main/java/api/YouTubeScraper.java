@@ -24,32 +24,52 @@ public class YouTubeScraper {
     }
 
     public void searchYouTubeAndPlay(String query, TextChannel channel, Member member) {
+        PlayerManager manager = PlayerManager.getInstance();
+        String search = query;
         query = query.replace("+", "%2");
         query = query.replace(" ", "+");
 
         webDriver.get("https://www.youtube.com/results?search_query=" + query);
         List<WebElement> list = webDriver.findElements(By.id("video-title"));
-        String url = list.get(0).getAttribute("href");
-        if (url == null) {
-            url = list.get(1).getAttribute("href");
+
+        boolean found = false;
+        for (int i = 0; i < 10; i++) {
+            String url = list.get(i).getAttribute("href");
+            if (url != null) {
+                manager.loadAndPlayNoLoadInfo(channel, url, member);
+                found = true;
+                i = 10;
+            }
         }
-        PlayerManager manager = PlayerManager.getInstance();
-        manager.loadAndPlay(channel, url, member);
+
+        if (!found) {
+            channel.sendMessage(":x: **Could not find song: **" + search).queue();
+        }
     }
 
     public void searchYouTubeAndPlay(List<String> query, TextChannel channel, Member member) {
         PlayerManager manager = PlayerManager.getInstance();
 
         for (String s : query) {
+            String search = s;
             s = s.replace("+", "%2");
             s = s.replace(" ", "+");
             webDriver.get("https://www.youtube.com/results?search_query=" + s);
             List<WebElement> list = webDriver.findElements(By.id("video-title"));
-            String url = list.get(0).getAttribute("href");
-            if (url == null) {
-                url = list.get(1).getAttribute("href");
+
+            boolean found = false;
+            for (int i = 0; i < 10; i++) {
+                String url = list.get(i).getAttribute("href");
+                if (url != null) {
+                    manager.loadAndPlayNoLoadInfo(channel, url, member);
+                    found = true;
+                    i = 10;
+                }
             }
-            manager.loadAndPlayNoLoadInfo(channel, url, member);
+
+            if (!found) {
+                channel.sendMessage(":x: **Could not find song: **" + search).queue();
+            }
         }
     }
 
