@@ -36,7 +36,7 @@ public class YouTubeScraper {
         for (int i = 0; i < 10; i++) {
             String url = list.get(i).getAttribute("href");
             if (url != null) {
-                manager.loadAndPlayNoLoadInfo(channel, url, member);
+                manager.loadAndPlay(channel, url, member);
                 found = true;
                 i = 10;
             }
