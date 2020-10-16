@@ -150,6 +150,7 @@ public class Assistant implements EventListener {
         String syntax = this.getGuildSyntax(event);
         String msg = event.getMessage().getContentRaw();
         String[] command = msg.split(" ", 2);
+        command[0] = command[0].toLowerCase();
 
         if ((syntax + this.listenCommand.getCommand()).equals(command[0])) {
             this.listenCommand.run(event);
