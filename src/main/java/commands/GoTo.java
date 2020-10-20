@@ -89,12 +89,12 @@ public class GoTo extends Command {
             if (colonCount == 2) { addIndex = 1; }
             if (positionSplit[addIndex].length() == 2 && positionSplit[1+addIndex].length() == 2) {
                 try {
-                    //Return 2 if there are more than 60 minutes
+                    //Return 0 if there are more than 60 minutes
                     int minutes = Integer.parseInt(positionSplit[addIndex]);
                     if (minutes > 59 || minutes < 0) {
                         return 0;
                     }
-                    //Return 2 if there are more than 60 seconds
+                    //Return 0 if there are more than 60 seconds
                     int seconds = Integer.parseInt(positionSplit[1+addIndex]);
                     if (seconds > 59 || seconds < 0) {
                         return 0;
@@ -104,12 +104,12 @@ public class GoTo extends Command {
                         return 0;
                     }
                 }
-                //Return 2 if there are letters in the string
+                //Return 0 if there are letters in the string
                 catch (NumberFormatException ignored) {
                     return 0;
                 }
             }
-            //Return 2 if 'minutes' or 'seconds' is bigger than 2 letters/numbers
+            //Return 0 if 'minutes' or 'seconds' is bigger than 2 letters/numbers
             else {
                 return 0;
             }
