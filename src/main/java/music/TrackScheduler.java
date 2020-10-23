@@ -16,7 +16,7 @@ import java.util.concurrent.*;
  */
 public class TrackScheduler extends AudioEventAdapter {
     private final AudioPlayer player;
-    private final BlockingQueue<AudioTrack> queue;
+    private BlockingQueue<AudioTrack> queue;
     private boolean onRepeat;
     private AudioTrack currentTrack;
 
@@ -117,5 +117,13 @@ public class TrackScheduler extends AudioEventAdapter {
 
     public void clearQueue() {
         queue.clear();
+    }
+
+    public BlockingQueue<AudioTrack> getQueue() {
+        return queue;
+    }
+
+    public void setQueue(BlockingQueue<AudioTrack> newQueue) {
+        queue = newQueue;
     }
 }
