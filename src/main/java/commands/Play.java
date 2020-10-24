@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 
+import java.util.concurrent.Executors;
+
 public class Play extends Command {
 
     public Play() {
@@ -64,8 +66,9 @@ public class Play extends Command {
             SpotifyPlaylistContent spotifyPlaylistContent = SpotifyModel.getInstance().getSpotifySongs(listId);
             event.getChannel().sendMessage(":white_check_mark: `" + actor + "` **added a Spotify playlist: **" +
                     spotifyPlaylistContent.getName() + " :musical_note:").queue();
-            YouTubeScraper.getInstance().searchYouTubeAndPlay(spotifyPlaylistContent.getTracks(), event.getTextChannel(),
-                    event.getMember());
+            Executors.newSingleThreadExecutor().execute(() ->
+                    YouTubeScraper.getInstance().searchYouTubeAndPlay(spotifyPlaylistContent.getTracks(),
+                            event.getTextChannel(), event.getMember(), spotifyPlaylistContent.getName()));
         } else if (command[1].contains("https://")) {
             PlayerManager manager = PlayerManager.getInstance();
             manager.loadAndPlay(event.getTextChannel(), command[1], event.getMember());

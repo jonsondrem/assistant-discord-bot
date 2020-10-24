@@ -47,7 +47,7 @@ public class YouTubeScraper {
         }
     }
 
-    public void searchYouTubeAndPlay(List<String> query, TextChannel channel, Member member) {
+    public void searchYouTubeAndPlay(List<String> query, TextChannel channel, Member member, String trackListName) {
         PlayerManager manager = PlayerManager.getInstance();
 
         for (String s : query) {
@@ -71,6 +71,9 @@ public class YouTubeScraper {
                 channel.sendMessage(":x: **Could not find song: **" + search).queue();
             }
         }
+
+        channel.sendMessage(":white_check_mark: **Done loading Spotify Playlist:** "
+                + trackListName + " :musical_note:").queue();
     }
 
     public void turnOffWebDriver() {

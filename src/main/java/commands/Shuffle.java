@@ -2,8 +2,11 @@ package commands;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import music.PlayerManager;
+import music.TrackInfo;
 import music.TrackScheduler;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import utilities.VoteHolder;
@@ -64,6 +67,14 @@ public class Shuffle extends Command {
             this.voteHolders.put(guildId, voteHolder);
         }
 
+        if (event.getMember().isOwner()) {
+            voteHolder.resetCounter();
+            event.getChannel().sendMessage(":white_check_mark: **Owner of the server shuffled the queue.**" +
+                    " :twisted_rightwards_arrows:").queue();
+            shuffleList(scheduler, event.getMember().getIdLong(), event.getTextChannel());
+            return;
+        }
+
         voteHolder.modifyAttributes(connectedChannel.getMembers().size() - 1, winPercentage);
 
         boolean voted = voteHolder.addVoter(event.getMember());
@@ -82,18 +93,24 @@ public class Shuffle extends Command {
             voteHolder.resetCounter();
             messageChannel.sendMessage(":white_check_mark: " +
                     "**Enough votes. Shuffling Queue.** :twisted_rightwards_arrows:").queue();
-            ArrayList<AudioTrack> queueList = new ArrayList<>(scheduler.getQueue());
-            queueList.add(scheduler.getPlayer().getPlayingTrack());
-            scheduler.getPlayer().startTrack(null, false);
-            Collections.shuffle(queueList);
-            BlockingQueue<AudioTrack> newQueue = new LinkedBlockingQueue<>(queueList);
-            scheduler.setQueue(newQueue);
-            scheduler.nextTrack();
+            shuffleList(scheduler, event.getMember().getIdLong(), event.getTextChannel());
         }
     }
 
     private int calculateThreshold(int voteCap, double winPercentage) {
         double threshold = (double) voteCap * winPercentage;
         return (int) Math.ceil(threshold);
+    }
+
+    private void shuffleList(TrackScheduler scheduler, long memberId, TextChannel channel) {
+        ArrayList<AudioTrack> queueList = new ArrayList<>(scheduler.getQueue());
+        AudioTrack trackClone = scheduler.getPlayer().getPlayingTrack().makeClone();
+        queueList.add(trackClone);
+        TrackInfo.addTrackInfo(trackClone, memberId, channel);
+        scheduler.getPlayer().startTrack(null, false);
+        Collections.shuffle(queueList);
+        BlockingQueue<AudioTrack> newQueue = new LinkedBlockingQueue<>(queueList);
+        scheduler.setQueue(newQueue);
+        scheduler.nextTrack();
     }
 }
