@@ -57,6 +57,7 @@ public class Assistant implements EventListener {
         list.add(new Shutdown());
         list.add(new GoTo());
         list.add(new Shuffle());
+        list.add(new Queue());
 
         list.add(new Help(list));
         return list;
